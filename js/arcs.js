@@ -74,15 +74,13 @@ const drawArcs = (data, regimes) => {
       .attr("x", d => {
         switch (d.data.regime) {
           case "electoral_autocracies":
-            return 510;
+            return 515;
           case "closed_autocracies":
             return 350;
           case "electoral_democracies":
             return 115;
           case "liberal_democracies":
             return 185;
-          // case "no_regime_data":
-          //   return 320;
         }
       })
       .attr("y", d => {
@@ -90,16 +88,14 @@ const drawArcs = (data, regimes) => {
           case "electoral_autocracies":
             return 150;
           case "closed_autocracies":
-            return 270;
+            return 280;
           case "electoral_democracies":
             return 140;
           case "liberal_democracies":
             return 55;
-          // case "no_regime_data":
-          //   return 50;
         }
       })
       .attr("fill", d => colorScale(d.data.regime))
-      .style("font-size", "15px");
+      .style("font-size", "14px");
 
 };

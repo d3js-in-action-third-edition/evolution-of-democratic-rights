@@ -25,11 +25,11 @@ h1, h2, h3, h4 {
 }
 h1 {
   margin: 6rem 0 1.2rem;
-  font-size: 4rem;
+  font-size: 4.8rem;
 }
 h2 {
   margin: 3rem 0 1.2rem;
-  font-size: 2.5rem;
+  font-size: 3rem;
 }
 p {
   margin: 1.2rem 0;
@@ -55,7 +55,7 @@ a:hover, a:focus {
 }
 .top-legend li {
   list-style: none;
-  margin: 1.2rem 0;
+  margin: 2rem 0;
 }
 li .label {
   margin-right: 4px;
@@ -81,5 +81,5 @@ li .label {
 /* Sources */
 .source {
   padding: 50px 0 30px;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
 }
