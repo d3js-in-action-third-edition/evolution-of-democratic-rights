@@ -48,13 +48,16 @@ a:hover, a:focus {
   font-weight: 500;
 }
 
+li {
+  list-style: none;
+}
+
 /* Top legend */
 .top-legend {
   margin: 0;
   padding-left: 5px;
 }
 .top-legend li {
-  list-style: none;
   margin: 2rem 0;
 }
 li .label {
@@ -76,6 +79,30 @@ li .label {
 }
 .label-no-data {
   box-shadow: inset 0 -20px 0 0 #555555;
+}
+
+/* Color legend */
+.color-legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 0;
+  padding-left: 0;
+}
+.color-legend-item {
+  margin: 5px 12px;
+  font-size: 1.4rem;
+}
+.color-legend span {
+  display: inline-block;
+}
+.color-legend-item-color {
+  position: relative;
+  top: 2px;
+  width: 14px;
+  height: 14px;
+  margin-right: 5px;
+  border-radius: 3px;
 }
 
 /* Sources */
