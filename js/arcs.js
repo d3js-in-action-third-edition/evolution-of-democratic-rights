@@ -30,7 +30,7 @@ const drawArcs = (data, regimes) => {
       .attr("alignment-baseline", "middle")
       .attr("x", width/2)
       .attr("y", pieChartHeight/2)
-      .style("font-size", "20px");
+      .style("font-size", "21px");
 
   // Initialize the path generator
   // need to generate array with values or array of objects with key-value pair
