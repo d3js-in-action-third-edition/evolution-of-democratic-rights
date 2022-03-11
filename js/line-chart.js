@@ -86,7 +86,7 @@ const drawLineChart = (partialData) => {
         .attr("cy", d => yScale(d[regime.id]))
         .attr("fill", colorScale(regime.id))
         // Handle mouse events
-        .on("mouseenter touch", (event, datapoint) => {
+        .on("mouseenter touchstart", (event, datapoint) => {
           console.log("event", event);
           console.log("datapoint", datapoint);
           
