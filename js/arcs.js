@@ -1,148 +1,110 @@
-const drawArcs = (data, regimes) => {
-  const data2020 = data.find(d => d.year === 2020);
+// Create the donut chart here
+const drawArcs = (data2020) => {
   console.log("data2020", data2020);
 
-  const data2020Formatted = [
-    {regime:"liberal_democracies", numPeople:1067360224},
-    {regime:"electoral_democracies", numPeople:1435304399},
-    {regime:"electoral_autocracies", numPeople:3366054285},
-    {regime:"closed_autocracies", numPeople:1909939094},
-    // {regime:"no_regime_data", numPeople:16140723},
-  ];
-  const totalPeople = d3.sum(data2020Formatted, d => d.numPeople);
-  console.log("totalPeople", totalPeople);
-
-  // Color scale
-  colorScale = d3.scaleOrdinal()
-    .domain(regimes)
-    .range(regimesInfo.map(regime => regime.color));
-
+  /*******************************/
+  /*    Append the containers    */
+  /*******************************/
+  const pieChartWidth = 300;
   const pieChartHeight = 300;
   const svg = d3.select("#pie-chart")
     .append("svg")
-      .attr("viewBox", [0, 0, width, pieChartHeight]);
+      .attr("viewBox", [0, 0, pieChartWidth, pieChartHeight]);
 
-  // Append text in the middle
-  svg
-    .append("text")
-      .text("2020")
-      .attr("text-anchor", "middle")
-      .attr("alignment-baseline", "middle")
-      .attr("x", width/2)
-      .attr("y", pieChartHeight/2)
-      .style("font-size", "21px");
+  // Append the group that will contain the chart
+  const innerChart = svg
+    .append("g")
+      .attr("transform", `translate(${pieChartWidth/2}, ${pieChartHeight/2})`)
 
-  // Initialize the path generator
-  // need to generate array with values or array of objects with key-value pair
-  const arcs = d3.pie()
-    .value(d => d.numPeople)(data2020Formatted);
-  console.log("arcs", arcs);
 
-  // Initialize arc generator
-  const arcGenerator = d3.arc()
-    .innerRadius(70)  // Show that if zero we get a pie chart
-    .outerRadius(110)
-    .padAngle(0.015)
-    .cornerRadius(3);
+  /***************************/
+  /*      Draw the arcs      */
+  /***************************/
+  // Format the data for the pie layout generator
+  const dataPie = [];
+  let totalPeople = 0;
+  regimesInfo.forEach(regime => {
+    if (regime.id !== "no_regime_data") {
+      const slice = { regime: regime.id, numPeople: data2020[regime.id] };
+      dataPie.push(slice);
+      totalPeople += data2020[regime.id];
+    }
+  });
+  console.log("dataPie", dataPie);
+
+  // // Initialize the path generator
+  // const arcs = d3.pie()
+  //   .value(d => d.numPeople)(dataPie);
+  // console.log("arcs", arcs);
+
+  // // Initialize arc generator
+  // const arcGenerator = d3.arc()
+  //   .innerRadius(70)
+  //   .outerRadius(110)
+  //   .padAngle(0.02)
+  //   .cornerRadius(3);
   
   // Append arcs
-  // Could I control the order?
-  svg
-    .append("g")
-      .attr("transform", `translate(${width/2}, ${pieChartHeight/2})`)
-    .selectAll("path.path-2020")
-    .data(arcs)
-    .join("path")
-      .attr("class", "path-2020")
-      .attr("d", d => {
-        return arcGenerator({
-          startAngle: d.startAngle,
-          endAngle: d.endAngle
-        });
-      })
-      .attr("fill", d => colorScale(d.data.regime));
-
-  svg
-    .append("g")
-      .attr("class", "pie-labels")
-    .selectAll(".arc-label")
-    .data(arcs)
-    .join("text")
-      .attr("class", "arc-label")
-      .text(d => d3.format(".0%")(d.data.numPeople/totalPeople))
-      .attr("x", d => {
-        // Pro tip: position on centroid of each arc
-        switch (d.data.regime) {
-          case "electoral_autocracies":
-            return 477;
-          case "closed_autocracies":
-            return 358;
-          case "electoral_democracies":
-            return 298;
-          case "liberal_democracies":
-            return 350;
-        }
-      })
-      .attr("y", d => {
-        switch (d.data.regime) {
-          case "electoral_autocracies":
-            return 150;
-          case "closed_autocracies":
-            return 239;
-          case "electoral_democracies":
-            return 140;
-          case "liberal_democracies":
-            return 74;
-        }
-      })
-      .attr("fill", "white")
-      .style("font-size", "14px")
-      .style("font-weight", 500);
-      // .text(d => `${regimesInfo.find(regime => regime.id === d.data.regime).label} ${d3.format(".0%")(d.data.numPeople/totalPeople)}`)
-      // // calculate position with centroid, as pro tip
-      // .attr("x", d => {
-      //   switch (d.data.regime) {
-      //     case "electoral_autocracies":
-      //       return 515;
-      //     case "closed_autocracies":
-      //       return 350;
-      //     case "electoral_democracies":
-      //       return 115;
-      //     case "liberal_democracies":
-      //       return 185;
-      //   }
-      // })
-      // .attr("y", d => {
-      //   switch (d.data.regime) {
-      //     case "electoral_autocracies":
-      //       return 150;
-      //     case "closed_autocracies":
-      //       return 280;
-      //     case "electoral_democracies":
-      //       return 140;
-      //     case "liberal_democracies":
-      //       return 55;
-      //   }
-      // })
-      // .attr("fill", d => colorScale(d.data.regime))
-      // .style("font-size", "14px");
+  // innerChart
+  //   .selectAll("path.path-2020")
+  //   .data(arcs)
+  //   .join("path")
+  //     .attr("class", "path-2020")
+  //     .attr("d", d => {
+  //       return arcGenerator({
+  //         startAngle: d.startAngle,
+  //         endAngle: d.endAngle
+  //       });
+  //     })
+  //     .attr("fill", d => colorScale(d.data.regime));
 
 
-  // Append color legend
-  const legendItems = d3.select("#pie-chart")
-    .append("ul")
-      .attr("class", "color-legend")
-    .selectAll(".color-legend-item")
-    .data(arcs)
-    .join("li")
-      .attr("class", "color-legend-item");
-  legendItems
-    .append("span")
-      .attr("class", "color-legend-item-color")
-      .style("background-color", d => regimesInfo.find(regime => regime.id === d.data.regime).color);
-  legendItems
-    .append("span")
-      .attr("class", "color-legend-item-label")
-      .text(d => regimesInfo.find(regime => regime.id === d.data.regime).label);
+  /*****************************/
+  /*     Append the labels     */
+  /*****************************/
+  // Append the year label at the center of the chart
+  // innerChart
+  //   .append("text")
+  //     .text("2020")
+  //     .attr("x", 0)
+  //     .attr("y", 0)
+  //     .attr("text-anchor", "middle")
+  //     .attr("alignment-baseline", "middle")
+  //     .style("font-size", "20px");
+
+  // Append the regime percentages
+  // innerChart
+  //   .selectAll(".arc-label")
+  //   .data(arcs)
+  //   .join("text")
+  //     .attr("class", "arc-label")
+  //     .text(d => d3.format(".0%")(d.data.numPeople/totalPeople))
+  //     .attr("x", d => arcGenerator.centroid(d)[0])
+  //     .attr("y", d => arcGenerator.centroid(d)[1])
+  //     .attr("text-anchor", "middle")
+  //     .attr("alignment-baseline", "middle")
+  //     .attr("fill", "white")
+  //     .style("font-size", "14px")
+  //     .style("font-weight", 500);
+
+
+  /***********************************/
+  /*     Append the color legend     */
+  /***********************************/
+  // const legendItems = d3.select("#current-distribution")
+  //   .append("ul")
+  //     .attr("class", "color-legend")
+  //   .selectAll(".color-legend-item")
+  //   .data(arcs)
+  //   .join("li")
+  //     .attr("class", "color-legend-item");
+  // legendItems
+  //   .append("span")
+  //     .attr("class", "color-legend-item-color")
+  //     .style("background-color", d => colorScale(regimesInfo.find(regime => regime.id === d.data.regime).id));
+  // legendItems
+  //   .append("span")
+  //     .attr("class", "color-legend-item-label")
+  //     .text(d => regimesInfo.find(regime => regime.id === d.data.regime).label);
 
 };

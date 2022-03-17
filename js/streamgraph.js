@@ -1,113 +1,140 @@
-const drawStreamGraph = (data, regimes) => {
-  console.log("data", data);
-  console.log("regimes", regimes);
+// Create the streamgraph here
+const drawStreamGraph = (data) => {
 
-  // X scale
-  xScale = d3.scaleLinear() // Try time scale instead?
-    .domain([new Date(d3.min(data, d => d.year)), new Date(d3.max(data, d => d.year))])
-    .range([0, innerWidth]);
-
-  // Y scale
-  const sumPeople = d3.max(data, d => {
-    let sumPeoplePerRegime = 0;
-    regimes.forEach(regime => sumPeoplePerRegime += d[regime]);
-    return sumPeoplePerRegime;
-  });
-  console.log("sumPeople", sumPeople);
-  yScale = d3.scaleLinear()
-    .domain([0, sumPeople])
-    .range([innerHeight, 0])
-    .nice();
-
-  // Color scale
-  colorScale = d3.scaleOrdinal()
-    .domain(regimes)
-    .range(regimesInfo.map(regime => regime.color));
-
-  const svg = d3.select("#streamgraph") // Shouldn"t we use an id instead? Fix chapt 2-3
+  /*******************************/
+  /*    Append the containers    */
+  /*******************************/
+  // Append the SVG container
+  const svg = d3.select("#streamgraph")
     .append("svg")
-      .attr("viewBox", [0, 0, width, height]) // How cool, viewbox can also be passed as an array!
-      // .style("border", "1px solid black");
+      .attr("viewBox", `0, 0, ${width}, ${height}`);
 
-  const chart = svg
+  // Append the group that will contain the chart
+  const innerChart = svg
     .append("g")
       .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
+  
+  /****************************/
+  /*    Declare the scales    */
+  /****************************/
+  // X scale
+  const xScale = d3.scaleLinear()
+    .domain(d3.extent(data, d => d.year))
+    .range([0, innerWidth]);
+  const bandScale = d3.scaleBand()
+    .domain(data.map(d => d.year))
+    .range([0, innerWidth])
+    .paddingInner(0.2);
+
+  // Y scale
+  const totalPeoplePerYear = [];
+  data.forEach(d => {
+    let totalPeople = 0;
+    regimesInfo.forEach(regime => {
+      totalPeople += d[regime.id];
+    });
+    totalPeoplePerYear.push(totalPeople);
+  });
+  const maxPeople = d3.max(totalPeoplePerYear);
+  
+  const yScale = d3.scaleLinear()
+    .domain([0, maxPeople])
+    .range([innerHeight, 0])
+    .nice();
+
+  
+  /***************************/
+  /*     Append the axes     */
+  /***************************/
+  // Bottom axis
   const bottomAxis = d3.axisBottom(xScale)
-    .tickSize(innerHeight * -1)
-    .tickFormat(d3.format("d"));
-  chart // Fix years formatting
+    .tickFormat(d3.format("d"))
+    .tickSize(innerHeight * -1);
+  innerChart
     .append("g")
-      .attr("class", "axis axis-x")
+      .attr("class", "axis-x")
       .attr("transform", `translate(0, ${innerHeight})`)
       .call(bottomAxis);
   d3.selectAll(".axis-x text")
-    .attr("dy", "15px");
-  // Express in millions
+    .attr("y", "10px");
+
+  // Left axis
   const leftAxis = d3.axisLeft(yScale)
-    .tickSize(innerWidth * -1)
     .tickFormat(d3.format("~s"))
-  chart
+    .tickSize(innerWidth * -1);
+  innerChart
     .append("g")
-      .attr("class", "axis axis-y")
+      .attr("class", "axis-y")
       .call(leftAxis);
   d3.selectAll(".axis-y text")
     .attr("dx", "-5px");
 
-  // Initialize the stack generator
+  
+  /****************************/
+  /*    Generate the stack    */
+  /****************************/
+  // Declare the stack generator
+  const regimes = regimesInfo.map(regime => regime.id);
   const stack = d3.stack()
-    .keys(regimes)
-    // .order(d3.stackOrderAscending) // The smallest areas at the bottom and the largest ones at the top.
-    .order(d3.stackOrderNone) // The smallest areas at the bottom and the largest ones at the top.
-    .offset(d3.stackOffsetNone); // Applies a zero baselinevent.
-    // Try relative version
-    // Re-order regimes
+    .keys(regimes);
 
-  // Call the stack generator to produce a stack for the data
-  let series = stack(data);
-  console.log("series", series);
+  // Call the stack generator to stack the data
+  const stackedData = stack(data);
+  console.log("stackedData", stackedData);
 
+  
+  /************************************/
+  /*    Draw the stacked bar chart    */
+  /************************************/
+  // stackedData.forEach(regime => {
+  //   innerChart
+  //     .selectAll(`.bar-${regime.key}`)
+  //     .data(regime)
+  //     .join("rect")
+  //       .attr("class", d => `bar-${regime.key} bar-${d.data.year}`)
+  //       .attr("x", d => bandScale(d.data.year))
+  //       .attr("y", d => yScale(d[1]))
+  //       .attr("width", bandScale.bandwidth())
+  //       .attr("height", d => Math.abs(yScale(d[1]) - yScale(d[0])))
+  //       .attr("fill", colorScale(regime.key));
+  // });
+
+  
+  /******************************/
+  /*    Draw the streamgraph    */
+  /******************************/
   // Initialize the area generator
-  const area = d3.area()
+  const areaGenerator = d3.area()
     .x(d => xScale(d.data.year))
     .y0(d => yScale(d[0]))
     .y1(d => yScale(d[1]))
-    .curve(d3.curveCatmullRom);
+    .curve(d3.curveMonotoneX);
 
   // Append paths
-  chart
-    .append("g")
-      .attr("class", "stream-paths")
-    .selectAll("path")
-    .data(series)
+  innerChart
+    .selectAll(".streamgraph-path")
+    .data(stackedData)
     .join("path")
-      .attr("d", area)
+      .attr("class", "streamgraph-path")
+      .attr("d", areaGenerator)
       .attr("fill", d => colorScale(d.key));
 
   // Append labels
-  const labels = svg
-    .append("g")
-      .attr("transform", `translate(${margin.left + innerWidth}, ${margin.top})`)
-    .selectAll(".streamgraph-legend-label")
+  innerChart
+    .selectAll(".streamgraph-label")
     .data(regimesInfo)
     .join("text")
-      .attr("class", "streamgraph-legend-label")
+      .attr("class", "chart-label streamgraph-label")
       .text(d => d.label)
-      .attr("x", 10)
+      .attr("x", innerWidth + 10)
       .attr("y", d => {
-        switch (d.id) {
-          case "liberal_democracies":
-            return 400;
-          case "electoral_democracies":
-            return 330;
-          case "electoral_autocracies":
-            return 180;
-          case "closed_autocracies":
-            return 70;
-          case "no_regime_data":
-            return 15;
-        };
+        const currentStack = stackedData.find(stack => stack.key === d.id);
+        const lowerBoudary = currentStack[currentStack.length - 1][0];
+        const upperBoudary = currentStack[currentStack.length - 1][1];
+        return yScale(lowerBoudary + (upperBoudary - lowerBoudary) / 2);
       })
-      .attr("fill", d => colorScale(d.color))
-      .style("font-size", "14px");
+      .attr("alignment-baseline", "middle")
+      .attr("fill", d => colorScale(d.id));
+
 };

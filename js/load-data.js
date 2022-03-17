@@ -1,7 +1,8 @@
-// Load data
-d3.tsv("./data/data.tsv", d3.autoType).then(data => {
-  // Explain autotype
-  drawLineChart(data.slice(-21), data.columns.slice(1));
-  drawStreamGraph(data, data.columns.slice(1));
-  drawArcs(data, data.columns.slice(1));
+// Load data here
+d3.tsv("../data/data.tsv", d3.autoType).then(data => {
+  console.log("data", data);
+  
+  drawLineChart(data.slice(-21));
+  drawStreamGraph(data);
+  drawArcs(data.find(d => d.year === 2020));
 });

@@ -37,11 +37,6 @@ const drawLineChart = (partialData) => {
     .range([innerHeight, 0])
     .nice();
 
-  // Color scale
-  const colorScale = d3.scaleOrdinal()
-    .domain(regimesInfo.map(regime => regime.id))
-    .range(colors);
-
   
   /***************************/
   /*     Append the axes     */
@@ -86,13 +81,13 @@ const drawLineChart = (partialData) => {
         .attr("cy", d => yScale(d[regime.id]))
         .attr("fill", colorScale(regime.id))
         // Handle mouse events
-        .on("mouseenter touchstart", (event, datapoint) => {
-          console.log("event", event);
-          console.log("datapoint", datapoint);
+        .on("mouseenter", (event, d) => {
+          console.log("d", d);
+          console.log("event", event, event.target);
           
+          const numPeople = d[regime.id];
           const cx = event.target.getAttribute("cx");
           const cy = event.target.getAttribute("cy");
-          const numPeople = yScale.invert(cy);
 
           tooltipText
             .text(d3.format("0.3s")(numPeople))
@@ -101,9 +96,9 @@ const drawLineChart = (partialData) => {
             .attr("stroke", colorScale(regime.id));
           tooltip
             .attr("transform", `translate(${cx - 0.5*tooltipWidth}, ${cy - 1.5*tooltipHeight})`)
-            .style("opacity", 1)
+            .style("opacity", 1);
         })
-        .on("mouseleave", (event, datapoint) => {
+        .on("mouseleave", (event, d) => {
           tooltip.style("opacity", 0);
         }); 
     
